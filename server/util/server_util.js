@@ -3,8 +3,12 @@ import { load } from 'cheerio';
 import Database from 'better-sqlite3';
 import { parseString } from 'xml2js';
 import fs from 'fs';
+import redis from 'redis';
 
 // We could use redis for both data store & cache, didn't really need mysql
+const cache = redis.createClient();
+await cache.connect();
+
 const db = new Database(':memory:', {});
 db.pragma('journal_mode = WAL');
 db.prepare(`
@@ -81,13 +85,20 @@ export const getBySku = async (sku) => {
     WHERE sku = ?
     `).get(sku);
   // Check Redis Cache before requesting from christianbook
-  let isCached = false;
-  if(isCached){
-    return {};
+  const cachedResult = await cache.get(sku);
+  if(cachedResult){
+    // Redis needs JSON module to store actual json, and it isnt installed by default
+    // So we're storing the JSON as a string & parsing it on retrivial
+    return JSON.parse(cachedResult);
   } else {
+    // Maybe using chunking here so we don't load the whole page?
     const { data } = await axios.get(row.url);
     const payload = scrapeHtml(data);
+
     // Add payload to cache
+    // No magic numbers!
+    const oneDay = 60*60*24;
+    await cache.set(sku, JSON.stringify(payload), { EX: oneDay });
     return payload;
   }
 }
