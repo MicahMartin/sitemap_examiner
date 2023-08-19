@@ -1,18 +1,22 @@
 import express from 'express';
-import {validateRequest, fetchAndStoreData} from './util/server_util.js';
+import {validateRequest, fetchAndStoreData, closeDb, getBySku} from './util/server_util.js';
 import packageJson from './package.json' assert { type: "json" };
 
 
-const SITEMAP_URL = process.env.SITEMAP_URL || "https://www.christianbook.com/sitemap4.xml";
-fetchAndStoreData(SITEMAP_URL);
+await fetchAndStoreData();
 
 const server = express();
 const middleware = [validateRequest];
 
-server.get("/product/:sku", middleware, async (req, res) => {
+server.get("/product/:sku", middleware, async (req, res, next) => {
   try {
     const sku = req.params["sku"];
-    res.json(sku);
+    const product = await getBySku(sku);
+    if(!product){
+      res.status(404);
+      res.json({message: "404 sku not found"});
+    }
+    res.json(product);
   } catch (e) {
     next(e);
   }
@@ -36,3 +40,8 @@ server.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 8032;
 server.listen(PORT);
+
+process.on('exit', function() {
+  console.log('About to close');
+  closeDb();
+});
