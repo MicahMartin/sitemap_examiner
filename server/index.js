@@ -1,12 +1,10 @@
 import express from 'express';
-import {validateRequest, getSiteMap} from './util/server_util.js';
+import {validateRequest, fetchAndStoreData} from './util/server_util.js';
 import packageJson from './package.json' assert { type: "json" };
 
 
-const PORT = process.env.PORT || 8032;
 const SITEMAP_URL = process.env.SITEMAP_URL || "https://www.christianbook.com/sitemap4.xml";
-const siteMap = await getSiteMap(SITEMAP_URL);
-console.log(siteMap);
+fetchAndStoreData(SITEMAP_URL);
 
 const server = express();
 const middleware = [validateRequest];
@@ -36,4 +34,5 @@ server.use((err, req, res, next) => {
   res.status(err.status || 500).json({ status: err.status, message: err.message });
 });
 
+const PORT = process.env.PORT || 8032;
 server.listen(PORT);
