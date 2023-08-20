@@ -34,6 +34,7 @@ export const fetchAndStoreData = async () => {
     }
 
     const siteMap = fs.readFileSync("./data/sitemap4.xml");
+    //FIXME: xml2js loads the ENTIRE xml file into memory. we gotta change this.
     parseString(siteMap, async (err, result) => {
       if (err) {
         console.error('XML parsing error:', err);
