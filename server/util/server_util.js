@@ -1,9 +1,9 @@
-import axios from 'axios';
-import { load } from 'cheerio';
 import Database from 'better-sqlite3';
 import { parseString } from 'xml2js';
-import fs from 'fs';
+import { load } from 'cheerio';
+import axios from 'axios';
 import redis from 'redis';
+import fs from 'fs';
 
 // Create a Redis cache client instance using default redis port 6379
 const cache = redis.createClient();
@@ -21,17 +21,9 @@ db.prepare(`
   )
 `).run();
 
-const checkDuplicates = db.prepare(`
-  SELECT sku,
-  COUNT(*) c
-  FROM products
-  GROUP BY sku HAVING c > 1
-`);
-
 // Function to fetch and store data from sitemap
 // We spend some extra time setting this up when server starts,
 // But now we get constant lookup time when searching by sku
-
 export const fetchAndStoreData = async () => {
   const SITEMAP_URL = process.env.SITEMAP_URL || "https://www.christianbook.com/sitemap4.xml";
   try {
@@ -70,9 +62,6 @@ export const fetchAndStoreData = async () => {
         }
       }).call();
       console.log('Data imported successfully');
-      // sanity check for dupes
-      const rows = checkDuplicates.all();
-      console.log(rows);
     });
   } catch (error) {
     console.error('Error:', error);
@@ -83,8 +72,9 @@ export const fetchAndStoreData = async () => {
 const scrapeHtml = (html) => {
   //FIXME: These HTML selectors are pretty fragile. This code is probably error prone
   const $ = load(html);
-  const title = $('.CBD-TitleWrapper > .CBD-ProductDetailTitle').text();
-  const author = $('.CBD-ProductDetailAuthor > .CBD-ProductDetailAuthorLink').first().text().trim();
+  const title = $('.CBD-TitleWrapper > .CBD-ProductDetailTitle').text().trim();
+  //FIXME: Doesnt work when theres more than one author :(
+  const author = $('.CBD-ProductDetailAuthor:contains("By:") a').first().text().trim();
   const price = $('.CBD-ProductDetailActionPrice').text().trim().match(/\$([\d.]+)/)[1]; 
   return { title, author, price };
 };
@@ -104,27 +94,14 @@ export const getBySku = async (sku) => {
     // Retrieve JSON from Redis and parse it
     return JSON.parse(cachedResult);
   } else {
-    // FIXME: Use chunking so we dont have to load the whole page?
-      const { data } = await axios.get(row.url);
+    // FIXME: Chunking so we dont have to load the whole page?
+    const { data } = await axios.get(row.url);
     const payload = scrapeHtml(data);
 
     // Add payload to cache with a one-day expiration
     // No magic numbers!
-      const oneDay = 60 * 60 * 24;
+    const oneDay = 60 * 60 * 24;
     await cache.set(sku, JSON.stringify(payload), { EX: oneDay });
     return payload;
   }
-};
-
-// close the SQLite database
-export const closeDb = () => db.close(); 
-
-// TODO: Middleware function to validate API requests (to be replaced with actual validation logic)
-export const validateRequest = (req, res, next) => {
-  console.debug("validating request");
-  if (!true) {
-    // Validation didn't pass, throw an error
-    throw({ status: 401, message: "Validation failed" });
-  }
-  next();
 };
