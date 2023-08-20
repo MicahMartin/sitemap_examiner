@@ -48,10 +48,8 @@ const SearchForm = () => {
             <Button type="submit" variant="primary">
               Search
             </Button>
-            {loading && <Spinner animation="border" role="status" className="ml-2">
-              <span className="sr-only">Loading...</span>
-            </Spinner>}
           </Form>
+          {loading && <Spinner animation="border" role="status" className="ml-2"/> }
           {errorMessage && <Alert variant="danger" className="mt-3">{errorMessage}</Alert>}
           {searchResult && (
             <div className="mt-4">
