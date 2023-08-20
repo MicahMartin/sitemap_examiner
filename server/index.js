@@ -1,10 +1,13 @@
-import { fetchAndStoreData, getBySku } from './util/server_util.js';
 import packageJson from './package.json' assert { type: "json" };
+import { fetchAndStoreData } from './util/db_util.js';
+import { getBySku } from './util/server_util.js';
 import express from 'express';
+import chalk from 'chalk';
 import cors from 'cors';
 
 // Fetch and store data before starting the server
-await fetchAndStoreData();
+console.log(chalk.yellow("Server Starting!"));
+fetchAndStoreData();
 const server = express();
 server.use(cors());
 
@@ -37,7 +40,7 @@ server.get("/status", async (req, res) => {
 
 // Define a global error handling middleware
 server.use((err, req, res, next) => {
-  console.error(err);
+  console.error(chalk.red(err));
   res.status(err.status || 500).json({ status: err.status, message: err.message });
 });
 
