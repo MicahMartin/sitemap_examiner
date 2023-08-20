@@ -88,6 +88,11 @@ export const getBySku = async (sku) => {
     WHERE sku = ?
   `).get(sku);
 
+  if(!row){
+    // nothing found
+    return false;
+  }
+
   // Check Redis Cache before requesting from Christianbook
   const cachedResult = await cache.get(sku);
   if (cachedResult) {

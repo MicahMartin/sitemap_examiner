@@ -1,13 +1,12 @@
-import {
-  fetchAndStoreData,
-  getBySku
-} from './util/server_util.js';
+import { fetchAndStoreData, getBySku } from './util/server_util.js';
 import packageJson from './package.json' assert { type: "json" };
 import express from 'express';
+import cors from 'cors';
 
 // Fetch and store data before starting the server
 await fetchAndStoreData();
 const server = express();
+server.use(cors());
 
 // Define a route for handling product requests by SKU
 server.get("/product/:sku", async (req, res, next) => {
@@ -17,9 +16,10 @@ server.get("/product/:sku", async (req, res, next) => {
     // Set HTTP status code to 404 if product is not found
     if (!product) {
       res.status(404);
-      res.json({ message: "404 sku not found" });
+      res.json({ message: `404 product with sku:${sku} not found` });
+    } else {
+      res.json(product); // Send the retrieved product details as JSON response
     }
-    res.json(product); // Send the retrieved product details as JSON response
   } catch (e) {
     next(e); // Call the error handling middleware in case of an exception
   }
