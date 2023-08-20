@@ -10,7 +10,7 @@ await fetchAndStoreData();
 const server = express();
 
 // Define a route for handling product requests by SKU
-server.get("/product/:sku", middleware, async (req, res, next) => {
+server.get("/product/:sku", async (req, res, next) => {
   try {
     const sku = req.params["sku"];
     const product = await getBySku(sku);
