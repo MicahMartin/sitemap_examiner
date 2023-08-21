@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import { Container, Form, Button, Card, Alert, Spinner } from 'react-bootstrap';
 import { Typeahead } from 'react-bootstrap-typeahead';
@@ -83,7 +83,7 @@ const SearchForm = () => {
             <div className="mt-4">
               <h2>{searchResult.title}</h2>
               <p>Author: {searchResult.author}</p>
-              <p>Price: {searchResult.price}</p>
+              <p>Price: ${searchResult.price}</p>
             </div>
           )}
         </Card.Body>
