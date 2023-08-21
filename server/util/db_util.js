@@ -50,6 +50,20 @@ openSearchClient.indices.create({
 
 export const getCache = async (key) => cache.get(key);
 export const setCache = async (key, value, expiration) => cache.set(key, value, expiration);
+export const flushCache = async (cacheKey = '') => {
+  try {
+    if(cacheKey === '') {
+      await cache.flushAll();
+      console.log(chalk.green('Redis cache flushed successfully.'));
+    }else {
+      await cache.del(cacheKey);
+      console.log(chalk.green(`Redis cache item with key "${cacheKey}" flushed successfully.`));
+    }
+
+  } catch (error) {
+    console.error(chalk.red('Error flushing Redis cache:', error));
+  }
+};
 
 export const searchBySku = async (sku) => {
   const query = {

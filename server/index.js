@@ -1,5 +1,5 @@
 import packageJson from './package.json' assert { type: "json" };
-import { fetchAndStoreData } from './util/db_util.js';
+import { fetchAndStoreData, flushCache } from './util/db_util.js';
 import { getByKeywords, getBySku } from './util/server_util.js';
 import express from 'express';
 import chalk from 'chalk';
@@ -51,6 +51,21 @@ server.get("/status", (req, res) => {
   };
 
   res.json(statusObj);
+});
+
+server.get("/flush_cache", (req, res, next) => {
+  try {
+    const cacheKey = req.query.cacheKey;
+    if (!cacheKey) {
+      flushCache();
+      res.json({ message: `entire cache flushed` });
+    } else {
+      flushCache(cacheKey);
+      res.json( { message: `cache item ${cacheKey} flushed`}); // Send the retrieved product details as JSON response
+    }
+  } catch (e) {
+    next(e); // Call the error handling middleware in case of an exception
+  }
 });
 
 // Define a global error handling middleware
