@@ -18,8 +18,9 @@ import axios from 'axios';
 const scrapeHtml = (html) => {
   const $ = load(html);
   // Extract title, author, and price
+  // These html selectors are fragile. This code is probably error prone... 
   const title = $('.CBD-TitleWrapper > .CBD-ProductDetailTitle').text().trim();
-  const author = $('.CBD-ProductDetailAuthor:contains("By:") a').text().trim();
+  const author = $('.CBD-ProductDetailAuthor:contains("By:") a').first().text().trim();
   const price = $('.CBD-ProductDetailActionPrice').text().trim().match(/\$([\d.]+)/)[1];
   return { title, author, price };
 };

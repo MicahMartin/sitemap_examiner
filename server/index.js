@@ -1,5 +1,5 @@
-import packageJson from './package.json' assert { type: "json" };
 import { fetchAndStoreData, flushCache, initDb } from './util/db_util.js';
+import packageJson from './package.json' assert { type: "json" };
 import { getByKeywords, getBySku } from './util/server_util.js';
 import express from 'express';
 import chalk from 'chalk';
