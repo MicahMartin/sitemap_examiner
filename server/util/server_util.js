@@ -1,4 +1,4 @@
-import { getRowBySku, getCache, setCache } from './db_util.js';
+import { searchBySku, getCache, setCache, searchByKeywords } from './db_util.js';
 import { load } from 'cheerio';
 import axios from 'axios';
 
@@ -10,23 +10,41 @@ const scrapeHtml = (html) => {
   return { title, author, price };
 };
 
+const oneDay = 60 * 60 * 24;
+
 export const getBySku = async (sku) => {
-  const row = await getRowBySku(sku);
-
-  if(!row){
-    return false;
-  }
-
   const cachedResult = await getCache(sku);
+
   if (cachedResult) {
     return JSON.parse(cachedResult);
   } else {
-    console.log(row);
-    const { data } = await axios.get(row.url);
-    const payload = scrapeHtml(data);
+    const product = await searchBySku(sku);
+    console.log(product);
 
-    const oneDay = 60 * 60 * 24;
-    setCache(sku, JSON.stringify(payload), { EX: oneDay });
-    return payload;
+    if(!product){
+      return false;
+    }
+
+    console.log(product);
+    const { data } = await axios.get(product._source.url);
+    const result = scrapeHtml(data);
+
+    setCache(sku, JSON.stringify(result), { EX: oneDay });
+    return result;
+  }
+};
+
+export const getByKeywords = async (keywords) => {
+  const keywordsCacheKey = `keywords:${keywords}`;
+  const cachedResult = await getCache(keywordsCacheKey);
+
+  if (cachedResult) {
+    return JSON.parse(cachedResult);
+  } else {
+    const results = await searchByKeywords(keywords);
+    console.log(results);
+
+    setCache(keywordsCacheKey, JSON.stringify(results), { EX: oneDay});
+    return results;
   }
 };

@@ -1,15 +1,15 @@
 import packageJson from './package.json' assert { type: "json" };
 import { fetchAndStoreData } from './util/db_util.js';
-import { getBySku } from './util/server_util.js';
+import { getByKeywords, getBySku } from './util/server_util.js';
 import express from 'express';
 import chalk from 'chalk';
 import cors from 'cors';
 
 // Fetch and store data before starting the server
 console.log(chalk.yellow("Server Starting!"));
-fetchAndStoreData();
 const server = express();
 server.use(cors());
+fetchAndStoreData();
 
 // Define a route for handling product requests by SKU
 server.get("/product/:sku", async (req, res, next) => {
@@ -28,6 +28,21 @@ server.get("/product/:sku", async (req, res, next) => {
   }
 });
 
+// search by keyword
+server.get("/search", async (req, res, next) => {
+  try {
+    const keywords = req.query.keywords; // Get the keywords from the query string
+    const products = await getByKeywords(keywords);
+    if (!products) {
+      res.status(404);
+      res.json({ message: `404 product with sku:${sku} not found` });
+    } else {
+      res.json(products); // Send the retrieved product details as JSON response
+    }
+  } catch (e) {
+    next(e);
+  }
+});
 // Define a route for the status page
 server.get("/status", (req, res) => {
   const statusObj = {
