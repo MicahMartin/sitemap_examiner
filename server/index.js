@@ -29,7 +29,7 @@ server.get("/product/:sku", async (req, res, next) => {
 });
 
 // Define a route for the status page
-server.get("/status", async (req, res) => {
+server.get("/status", (req, res) => {
   const statusObj = {
     server_port: PORT,
     server_version: packageJson.version,

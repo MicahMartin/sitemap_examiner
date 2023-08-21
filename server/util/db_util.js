@@ -1,7 +1,7 @@
-import Database from 'better-sqlite3';
 import axios from 'axios';
 import chalk from 'chalk';
 import redis from 'redis';
+import sqlite3 from 'sqlite3';
 import sax from 'sax';
 import fs from 'fs';
 
@@ -11,16 +11,28 @@ await cache.connect();
 
 // Create a SQLite database and set up the products table
 // We could definitely use redis for this too
-const dbOptions = {};
 // Using memory over disk for simplicitys sake
-const db = new Database(':memory:', dbOptions);
-// Performance stuff, see https://www.sqlite.org/wal.html
-db.pragma('journal_mode = WAL');
+const db = new sqlite3.Database(':memory:');
 db.prepare(`CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY, sku TEXT UNIQUE, url TEXT)`).run();
 
 export const getCache = async (key) => cache.get(key);
 export const setCache = async (key, value, expiration) => cache.set(key, value, expiration);
-export const getRowBySku = async (sku) => db.prepare(`SELECT * FROM products WHERE sku = ?`).get(sku);
+export const getRowBySku = (sku) => {
+  return new Promise((resolve, reject) => {
+    db.get(`SELECT * FROM products WHERE sku = ?`, sku, (err, row) => {
+      if(err){
+        console.error(chalk.red(err));
+        reject(err);
+      } else {
+        if (row) {
+          resolve(row);
+        } else {
+          resolve(false); // Return false if no product is found
+        }
+      }
+    });
+  });
+}
 
 // Function to fetch and store data from sitemap 
 // We spend some extra time setting this up when server starts,
@@ -54,7 +66,9 @@ export const fetchAndStoreData = async () => {
         if (match && match[1]) {
           const sku = match[1];
           urlCounter++;
-          db.prepare(`INSERT INTO products (sku, url) VALUES (?, ?)`).run(sku, currentUrl);
+          const statement = db.prepare(`INSERT INTO products (sku, url) VALUES (?, ?)`);
+          statement.run(sku, currentUrl);
+          statement.finalize();
         }
         currentUrl = null;
       }
@@ -78,6 +92,7 @@ export const fetchAndStoreData = async () => {
     siteMap.pipe(parser);
   } catch (error) {
     console.error(chalk.red('Error during sitemap ingestion:', error));
+    throw(error);
   }
 };
 
