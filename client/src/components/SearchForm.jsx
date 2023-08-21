@@ -66,7 +66,10 @@ const SearchForm = () => {
                     setSku('');
                   }
                 }}
-                onInputChange={input => fetchKeywordSuggestions(input)}
+                onInputChange={input => {
+                  fetchKeywordSuggestions(input);
+                  setSku(input); // Update the sku state with the input value
+                }}
               />
             </Form.Group>
             <Button type="submit" variant="primary">
