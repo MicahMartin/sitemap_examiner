@@ -1,0 +1,71 @@
+/* rbt menu is the classname from the typeahead component */
+#sku-typeahead .rbt-menu {
+  border: 3px solid #ced4da;
+  background-color: white;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.result {
+  padding: 1rem;
+  border: 3px solid #ced4da;
+  background-color: #f8f9fa;
+  margin-top: 1rem;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out; /* Add a transition for opacity */
+}
+
+/* search section active*/
+.result.show {
+  opacity: 1;
+}
+
+
+.main-card {
+  border: none;
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.5);
+}
+
+.search-btn {
+  margin-top: 1rem;
+  border-radius: 4px;
+}
+
+.btn-primary {
+  background-color: #0070ba !important;
+  border-color: #0070ba !important;
+}
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:visited,
+.btn-primary:focus {
+  background-color: #00548f !important; /* darker version of #0070ba */
+  border-color: #00548f !important;
+}
+
+.spinner {
+  margin-top: 0.5rem;
+  margin-left: 0.5rem;
+}
+
+.alert-error {
+  margin-top: 1rem;
+}
+
+.result-details {
+  margin-top: 1rem;
+}
+
+.result-title {
+  margin-bottom: 0.5rem;
+}
+
+.result-property {
+  font-weight: bold;
+}
+
+.result-value {
+  color: #0070ba;
+}
