@@ -13,6 +13,7 @@ const SearchForm = () => {
   const handleSearch = async event => {
     event.preventDefault(); // Prevent form submission
 
+    console.log(`the sku ${sku}`);
     try {
       setLoading(true); // Set loading to true
       const response = await axios.get(`http://localhost:8032/product/${sku}`);
@@ -54,7 +55,7 @@ const SearchForm = () => {
               <Typeahead
                 id="sku-typeahead"
                 options={keywordSuggestions.map(item => item.keywords.join(', '))}
-                placeholder="Enter SKU"
+                placeholder="Enter SKU or Keyword"
                 selected={sku ? [sku] : []}
                 onChange={selected => {
                   if (selected[0]) {
