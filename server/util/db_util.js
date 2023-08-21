@@ -67,40 +67,40 @@ export const initDb = async () => {
 }
 
 /**
- * Utility function to get a value from the cache by key.
+ * Utility function to get a value from the cache by key
  * @async
  * @name db_util/getCache
  * @method
  * @memberof module:db_util
  * @inner
- * @param {string} key - The key to retrieve from the cache.
- * @returns {Promise<string|null>} The cached value if found, otherwise null.
+ * @param {string} key - The key to retrieve from the cache
+ * @returns {Promise<string|null>} The cached value if found or null
  */
 export const getCache = async (key) => cache.get(key);
 
 /**
- * Utility function to set a value in the cache with an optional expiration time.
+ * Utility function to set a value in the cache with an optional expiration time
  * @async
  * @name db_util/setCache
  * @method
  * @memberof module:db_util
  * @inner
- * @param {string} key - The key to set in the cache.
- * @param {string} value - The value to store in the cache.
- * @param {number|null} expiration - Optional expiration time in seconds.
- * @returns {Promise<string>} A string indicating success.
+ * @param {string} key - The key to set in the cache
+ * @param {string} value - The value to store in the cache
+ * @param {number|null} expiration - Optional expiration time in seconds
+ * @returns {Promise<string>} A promise indicating success
  */
 export const setCache = async (key, value, expiration) => cache.set(key, value, expiration);
 
 /**
- * Utility function to flush the entire cache or a specific cache item.
+ * Utility function to flush the entire cache or a specific cache item
  * @async
  * @name db_util/flushCache
  * @method
  * @memberof module:db_util
  * @inner
- * @param {string} [cacheKey=''] - The key of the cache item to flush (optional).
- * @returns {Promise<void>} A promise indicating completion.
+ * @param {string} [cacheKey=''] - The key of the cache item to flush (optional)
+ * @returns {Promise<void>} A promise containing result
  */
 export const flushCache = async (cacheKey = '') => {
   try {
@@ -118,14 +118,14 @@ export const flushCache = async (cacheKey = '') => {
 };
 
 /**
- * Utility function to search for a product by SKU in OpenSearch.
+ * Utility function to search for a product by SKU in OpenSearch
  * @async
  * @name db_util/searchBySku
  * @method
  * @memberof module:db_util
  * @inner
- * @param {string} sku - The SKU to search for.
- * @returns {Promise<object|null>} The product details if found, otherwise null.
+ * @param {string} sku - The SKU to look for
+ * @returns {Promise<object|null>} The product details if found, or null
  */
 export const searchBySku = async (sku) => {
   const query = {
@@ -144,14 +144,14 @@ export const searchBySku = async (sku) => {
 }
 
 /**
- * Utility function to search for products by keywords in OpenSearch.
+ * Utility function to search for products by keywords in OpenSearch
  * @async
  * @name db_util/searchByKeywords
  * @method
  * @memberof module:db_util
  * @inner
- * @param {string} keywords - The keywords to search for.
- * @returns {Promise<object[]>} An array of products matching the keywords.
+ * @param {string} keywords - The keywords to look for
+ * @returns {Promise<object[]>} promise containing array of products matching the keywords
  */
 export const searchByKeywords = async (keywords) => {
   const keywordsArray = keywords.split(' ');
@@ -179,13 +179,13 @@ export const searchByKeywords = async (keywords) => {
 };
 
 /**
- * Parses keywords from a URL path.
+ * Parses keywords from a URL path
  * @name db_util/extractKeywordsFromUrl
  * @method
  * @memberof module:db_util
  * @inner
- * @param {string} url - The URL to extract keywords from.
- * @returns {string[]} An array of extracted keywords.
+ * @param {string} url - The URL to extract keywords from
+ * @returns {string[]} An array of extracted keywords
  */
 const extractKeywordsFromUrl = (url) => {
   let cleanedUrl = url.replace(/^https:\/\/www\.christianbook\.com/, '');
@@ -208,7 +208,7 @@ const progressBar = new cliProgress.SingleBar({
 });;
 
 /**
- * Utility function to fetch and store data from sitemap to OpenSearch index.
+ * Utility function to fetch and store data from sitemap to OpenSearch index
  * We spend some extra time setting this up when server starts,
  * But now we get constant lookup time when searching by sku
  * @async
@@ -225,8 +225,6 @@ export const fetchAndStoreData = async () => {
     // Check if sitemap4.xml exists on disk, if not, download and save it
     const SITEMAP_URL = process.env.SITEMAP_URL || "https://www.christianbook.com/sitemap4.xml";
     const SITEMAP_PATH = process.env.SITEMAP_PATH || "./data/sitemap4.xml";
-    progressBar.start(fs.statSync(SITEMAP_PATH).size, 0);
-
     const parser = sax.createStream(false, { lowercase: true });
 
     if (!fs.existsSync(SITEMAP_PATH)) {
@@ -239,6 +237,8 @@ export const fetchAndStoreData = async () => {
       const endTime = performance.now();
       console.log(chalk.green(`Finished downloading sitemap, took ${(endTime - startTime) / 1000} seconds`));
     }
+
+    progressBar.start(fs.statSync(SITEMAP_PATH).size, 0);
 
     let bytesProcessed = 0;
     const siteMap = fs.createReadStream(SITEMAP_PATH);

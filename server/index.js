@@ -11,25 +11,25 @@ import cors from 'cors';
  */
 
 /**
- * Server configuration and route definitions.
+ * Server configuration and route definitions
  */
 console.log(chalk.yellow("Server Starting!"));
 const server = express();
 server.use(cors());
 
 /**
- * Fetch and store data before starting the server.
+ * Fetch and store data before starting the server
  */
 await initDb();
 fetchAndStoreData();
 
 /**
- * Route for handling product requests by SKU.
+ * Route for handling product requests by SKU
  * @name server/product
  * @method
  * @memberof module:routers
  * @inner
- * @param {string} req.params.sku - SKU of the product to retrieve.
+ * @param {string} req.params.sku - SKU of the product to retrieve
  */
 server.get("/product/:sku", async (req, res, next) => {
   try {
@@ -47,12 +47,12 @@ server.get("/product/:sku", async (req, res, next) => {
 });
 
 /**
- * Route for searching products by keywords.
+ * Route for searching products by keywords
  * @name server/search
  * @method
  * @memberof module:routers
  * @inner
- * @param {string} req.query.keywords - Keywords to search for.
+ * @param {string} req.query.keywords - Keywords to search for
  */
 server.get("/search", async (req, res, next) => {
   try {
@@ -70,7 +70,7 @@ server.get("/search", async (req, res, next) => {
 });
 
 /**
- * Route for fetching server status.
+ * Route for fetching server status
  * @name server/status
  * @method
  * @memberof module:routers
@@ -85,12 +85,12 @@ server.get("/status", (req, res) => {
 });
 
 /**
- * Route for flushing cache items.
+ * Route for flushing cache items
  * @name server/flush_cache
  * @method
  * @memberof module:routers
  * @inner
- * @param {string} req.query.cacheKey - Key of the cache item to flush.
+ * @param {string} req.query.cacheKey - Key of the cache item to flush
  */
 server.get("/flush_cache", (req, res, next) => {
   try {
@@ -108,7 +108,7 @@ server.get("/flush_cache", (req, res, next) => {
 });
 
 /**
- * Global error handling middleware.
+ * Global error handling middleware
  */
 server.use((err, req, res, next) => {
   console.error(chalk.red(err));

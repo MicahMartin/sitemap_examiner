@@ -7,35 +7,34 @@ import axios from 'axios';
  */
 
 /**
- * Scrape product details from HTML using Cheerio.
+ * Scrape product details from HTML using Cheerio
  * @name server_util/scrapeHtml
  * @method
  * @memberof module:server_util
  * @inner
- * @param {string} html - The HTML content to scrape.
- * @returns {object} An object containing the scraped product details.
+ * @param {string} stream - The HTML stream content to scrape
+ * @returns {object} An object containing the scraped product details
  */
 const scrapeHtml = (html) => {
-  // These HTML selectors are fragile. This is probably error prone
-  // TODO: Explore scraping html in chunks so we dont process entire file
   const $ = load(html);
+  // Extract title, author, and price
   const title = $('.CBD-TitleWrapper > .CBD-ProductDetailTitle').text().trim();
-  const author = $('.CBD-ProductDetailAuthor:contains("By:") a').first().text().trim();
-  const price = $('.CBD-ProductDetailActionPrice').text().trim().match(/\$([\d.]+)/)[1]; 
+  const author = $('.CBD-ProductDetailAuthor:contains("By:") a').text().trim();
+  const price = $('.CBD-ProductDetailActionPrice').text().trim().match(/\$([\d.]+)/)[1];
   return { title, author, price };
 };
 
 const oneDay = 60 * 60 * 24;
 
 /**
- * Retrieve a product by SKU, either from cache or by searching.
+ * Retrieve a product by SKU, either from cache or by searching
  * @name server_util/getBySku
  * @async
  * @method
  * @memberof module:server_util
  * @inner
- * @param {string} sku - The SKU of the product to retrieve.
- * @returns {Promise<object|boolean>} The product details if found, or false if not found.
+ * @param {string} sku - The SKU of the product to retrieve
+ * @returns {Promise<object|boolean>} The product details if found, or false if not found
  */
 export const getBySku = async (sku) => {
   const cachedResult = await getCache(sku);
@@ -44,16 +43,26 @@ export const getBySku = async (sku) => {
     return JSON.parse(cachedResult);
   } else {
     const product = await searchBySku(sku);
-    console.log(product);
 
     if(!product){
       return false;
     }
 
     console.log(product);
+    let startTime = performance.now();
+
     const { data } = await axios.get(product._source.url);
+
+    let endTime = performance.now();
+    console.log(`took ${(endTime - startTime)/1000} seconds to pull html`);
+
+    startTime = performance.now();
+
     const result = scrapeHtml(data);
 
+    endTime = performance.now();
+
+    console.log(`took ${(endTime - startTime)/1000} seconds to process html`);
     setCache(sku, JSON.stringify(result), { EX: oneDay });
     return result;
   }
