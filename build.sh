@@ -45,4 +45,5 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 fi
 
 cd ..
+
 echo "Project build completed!"
