@@ -39,25 +39,27 @@ This definitely isn't everything, but these are the resources I referred to the 
 So the actual implementation took me about 3 days? (Still working on optimizing) 
 With unlimited time, I'd probably do these things:
 
-1. **Optimize Scraping**: refine the HTML scraping process for better accuracy and performance, handling edge cases and fragile HTML selectors. We might be able to get better performance if we read the html chunk by chunk like I described earlier
+1. **Security Measures**: implement security features. The API has no validation & we're trusting user input with no sanitization which is a recipe for disaster. Pretty sure the cache can be poisioned with trivial get requests at the moment
 
-2. **Enhance UI/UX**: Invest in a more polished and responsive user interface. Implement more animations & transitions, better feedback during loading and errors, etc. UI/UX definitely isn't my strong suit, so I know this project is lacking in this area.
+2. **Automated Testing**: Implement unit and integration tests, integrate with CI/CD service like circleCI
 
-3. **Security Measures**: Implement security features. The API has no validation & we're trusting user input with no sanitization which is a recipe for disaster.
+3. **Optimize Scraping**: refine the HTML scraping process for better accuracy and performance, handling edge cases and fragile HTML selectors. We might be able to get better performance if we read the html chunk by chunk
 
-4. **Automated Testing**: Implement unit and integration tests, integrate with CI/CD  service like circleCI
+4. **Database Sharding**: Develop sharding strategy on the OpenSearch index to distribute data storage and retrieval. Opensearch plays well with amazon
 
-5. **Database Sharding**: Develop sharding strategy on the OpenSearch index to distribute data storage and retrieval load. Opensearch plays well with amazon, so we could use AWS for distributed processing
+5. **Containerization**: Run service inside docker container
+
+6. **Enhance UI/UX**: Invest in a more polished and responsive user interface. Implement more animations & transitions, better feedback during loading and errors, etc. UI/UX definitely isn't my strong suit, so I know this project is lacking in this area.
 
 7. **Logging and Monitoring**: Implement some logging with log4js
 
-8. **Containerization**: Run service inside docker container 
 
 ## Code Critique
 Here are a couple things I can say about my code
 
-- **Error Handling**: Implement more error handling with better error messages 
-- **Logging**: Implement persistent logging!
+- **Tests**: I didnt get to implement unit tests! The tests I currently have are more integration / end to end tests than unit tests. If I had more time to figure out how to mock my data I would be able to write actual unit tests
+- **Arbitrary Sharding / Replica Count**: My understanding of sharding & replication isn't strong enough for me to decide how many shards / replicas of elastic search I need.
+- **Styling / Client**: Instead of importing sass I used `!important` in the css to override bootstrap styles which is an anti pattern. The UI could look a lot better!
+- **Error Handling & Logging**: Implement more error handling with better error messages and persistent logging
 - **Comments and Documentation**: More comments & documentation. Add diagrams for the system flow & relationships.
 - **Separation of Concerns**: We could probably seperate concerns more in the express api
-- **Tests**: Implement unit & integration tests! 
