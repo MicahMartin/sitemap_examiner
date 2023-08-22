@@ -33,8 +33,7 @@ export const initDb = async () => {
   const indexExists = await openSearchClient.indices.exists({
     index: indexName,
   });
-
-  if(indexExists){
+  if(indexExists.body){
     console.log(chalk.yellow("deleting open search product index"));
     await openSearchClient.indices.delete({index:indexName});
   }
