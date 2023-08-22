@@ -6,7 +6,7 @@ cleanup() {
   kill $redis_pid
   kill $opensearch_pid
   kill $express_pid
-  # kill $client_pid
+  kill $client_pid
   exit
 }
 
