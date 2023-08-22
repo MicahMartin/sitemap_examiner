@@ -1,10 +1,18 @@
 # Sitemap Examiner System Documentation
 
+## How Do You Run This System?
+To start the service, clone the repo and run build.sh. This script installs dependencies like Open Search & Redis, then builds the nodeJs with npm install.
+
+To run the service, call the run.sh script. It will start open search & redis, then it will start vite which serves our client side code to http://localhost:5173/. After the client has spawned it'll start the express server with the npm start command. The express server will display it's initilization progress in the console. Once the server is done importing the xml data into elastic search, it is ready to accept queries. 
+
+The client app accepts keyword search or SKU search in the same input field. When you search via keyword & select one of the suggestions from the type ahead drop down, it will replace the keywords with the sku for that object.
+
+The Sitemap Examiner system is designed to allow users to search for products using a specific SKU or keywords. The system consists of a client-side React app made with vite and an express API on the backend. The React app allows users to input a SKU or keywords, which are then sent to the express server for processing. The server communicates with an OpenSearch index and a Redis cache to retrieve product data. The data is fetched from the christaianbook sitemap file, and the server also scrapes product details from the christianbook web page. The client receives the retrieved product information and displays it to the user.
 ## How Does This System Work?
 The Sitemap Examiner system is designed to allow users to search for products using a specific SKU or keywords. The system consists of a client-side React app made with vite and an express API on the backend. The React app allows users to input a SKU or keywords, which are then sent to the express server for processing. The server communicates with an OpenSearch index and a Redis cache to retrieve product data. The data is fetched from the christaianbook sitemap file, and the server also scrapes product details from the christianbook web page. The client receives the retrieved product information and displays it to the user.
 
 ## Scaling the System to Search Across All Sitemap Files
-To scale the system to search across all sitemap files we'd have to first ingest all the sitemap files. This could be a problem if we try to do it sequentially & all on one instance.... it already takes 8 seconds on average to parse one sitemap file and add it to Open Search! With this in mind, we could take a few different approaches
+To scale the system to search across all sitemap files we'd have to first ingest all the sitemap files. This could be a problem if we try to do it sequentially & all on one instance.... it already takes 2 seconds on average to parse one sitemap file and another 5 seconds to push the data into open search. With this in mind, we could take a few different approaches
 
 1. **Distributed Sitemap Parsing**: Implement a distributed system that parses multiple sitemap files simultaneously, possibly using a queue like bull-queue to distribute tasks to multiple processing nodes
 2. **Horizontal Scaling**: Deploy multiple instances of the server on different machines or containers to handle higher user concurrency using AWS or another cloud provider
