@@ -53,8 +53,8 @@ export const initDb = async () => {
     },
     settings: {
       index: {
-        number_of_shards: 4,
-        number_of_replicas: 2,
+        number_of_shards: 8,
+        number_of_replicas: 4,
       },
     },
   };
@@ -163,7 +163,7 @@ export const searchByKeywords = async (keywords) => {
             keywords: {
               value: keyword,
               fuzziness: 'AUTO',
-              max_expansions: 50
+              max_expansions: 10
             }
           }
         }))
