@@ -42,6 +42,7 @@ export const getBySku = async (sku) => {
   const cachedResult = await getCache(sku);
 
   if (cachedResult) {
+    console.log("from cache");
     return JSON.parse(cachedResult);
   } else {
     const product = await searchBySku(sku);
