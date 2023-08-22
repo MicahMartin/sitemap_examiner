@@ -21,9 +21,9 @@ class MyUser(HttpUser):
     # def get_product(self):
     #     self.client.get("/product/404")
 
-    @task
-    def search_products(self):
-        random_word_count = random.randint(1, 3)
-        random_words = random.sample(WORDS, random_word_count)
-        query_param = " ".join(word.decode("utf-8") for word in random_words)
-        self.client.get(f"/search?keywords={query_param}")
+    # @task
+    # def search_products(self):
+    #     random_word_count = random.randint(1, 3)
+    #     random_words = random.sample(WORDS, random_word_count)
+    #     query_param = " ".join(word.decode("utf-8") for word in random_words)
+    #     self.client.get(f"/search?keywords={query_param}")
