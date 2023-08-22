@@ -17,15 +17,21 @@ To scale the service to search across all sitemap files we'd have to first inges
 2. **Horizontal Scaling**: Deploy multiple instances of the server on different machines or containers to handle higher user concurrency using AWS or another cloud provider
 
 ## Performance with Different User Loads
-performance test results coming soon!
+(All testing done with locus)
+(I didn't stress test the sku lookup endpoint since that scrapes christianbook.com for html and it could cause a DDoS).
 
-- **100 Users**: The service should handle 100 users effectively without a significant impact on performance. The caching mechanism and optimizations should help reduce the load on the server.
-
-- **10,000 Users**: with proper load balancing and caching, the service should still perform reasonably well? However, bottlenecks might start to appear especially when scraping the html... so horizontal scaling and distributed systems should be considered. 
+- **100 Users**: The keyword search service & status endpoint handles 100 concurrents effectively without a significant impact on performance. With proper load balancing and caching, the sku lookup service should still perform. bottlenecks might start to appear especially when scraping the html... so horizontal scaling and distributed systems should be considered. 
 We might be able to squeeze out some extra performance if we read the HTML chunk by chunk while scraping and closing the stream once we've matched our tags.
-We'd probably have to reconsider our client side type ahead strategy, since it makes many requests to the server.
+We'd probably have to reconsider our client side type-ahead strategy, since it makes many requests to the server.
 
-- **1,000,000 Users**: At this point additional optimizations are critical... Distributing tasks / horizontal scaling, employing content delivery networks (CDNs) for frontend assets, and utilizing advanced caching mechanisms would help us achieve reasonable performance
+
+- **1000 Users**: This is where we start to see problems with this setup. Elastic search begins to show read problems around 300 concurrent users. When the server has 1k concurrents all hitting the search endpoint, elastic search begins to slow down considerably and begins rejecting requests.
+hitting the status point with 1k concurrents is still fine, but it begins to slow down after 500 concurrents. Under no strain the status endpoint returns in 24ms, but it takes 860ms at 1k concurrents. 
+Discussion about ES concurrency: https://discuss.elastic.co/t/concurrent-search-request-to-elasticsearch/21539
+
+- **10,000 Users**: hitting the status endpoint with 10k concurrents makes the average response time go up to 3 seconds ( when it usually takes 24 milliseconds ) and we start to see about 5% of the requests failing. This lets us know that our bottle neck is most likely regarding elastic search.
+
+- **1,000,000 Users**: At this point additional optimizations are critical... Distributing tasks / horizontal scaling, employing content delivery networks (CDNs) for frontend assets, and utilizing advanced caching mechanisms would probably help us achieve reasonable performance
 
 ## Resources Consulted
 This definitely isn't everything, but these are the resources I referred to the most

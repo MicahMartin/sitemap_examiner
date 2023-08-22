@@ -1,4 +1,4 @@
-from locust import HttpUser, task, between
+from locust import HttpUser, task, constant
 import requests
 import random
 
@@ -11,11 +11,11 @@ response = requests.get(word_site)
 WORDS = response.content.splitlines()
 
 class MyUser(HttpUser):
-    wait_time = between(1, 3)  # Wait between 0 and 2 seconds between requests
+    wait_time = constant(.5)
 
-    @task
-    def get_status(self):
-        self.client.get("/status")
+    # @task
+    # def get_status(self):
+    #     self.client.get("/status")
 
     # @task
     # def get_product(self):

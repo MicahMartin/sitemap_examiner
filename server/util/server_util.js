@@ -86,7 +86,6 @@ export const getByKeywords = async (keywords) => {
     return JSON.parse(cachedResult);
   } else {
     const results = await searchByKeywords(keywords);
-    console.log(results);
 
     setCache(keywordsCacheKey, JSON.stringify(results), { EX: oneDay});
     return results;
