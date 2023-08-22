@@ -232,18 +232,18 @@ export const fetchAndStoreData = async () => {
     }
 
     // progress bar for the console
-    const progressBar = new cliProgress.SingleBar({
-      format: `${chalk.yellow("Parsing Sitemap Xml...")} ${chalk.magenta('[{bar}]')} ${chalk.yellow('{percentage}%')} | ETA: {eta}s | {value}/{total} URLs`,
-      barCompleteChar: '\u2588',
-      barIncompleteChar: '\u2591',
-    });
+    // const progressBar = new cliProgress.SingleBar({
+    //   format: `${chalk.yellow("Parsing Sitemap Xml...")} ${chalk.magenta('[{bar}]')} ${chalk.yellow('{percentage}%')} | ETA: {eta}s | {value}/{total} URLs`,
+    //   barCompleteChar: '\u2588',
+    //   barIncompleteChar: '\u2591',
+    // });
 
     startTime = performance.now();
-    progressBar.start(fs.statSync(SITEMAP_PATH).size, 0);
+    // progressBar.start(fs.statSync(SITEMAP_PATH).size, 0);
 
     let bytesProcessed = 0;
     const siteMap = fs.createReadStream(SITEMAP_PATH);
-    siteMap.on('data', chunk => progressBar.update(bytesProcessed += chunk.length));
+    // siteMap.on('data', chunk => progressBar.update(bytesProcessed += chunk.length));
     let urlCounter = 0;
     let insertCounter = 0;
     let currentUrl = null;
@@ -261,7 +261,7 @@ export const fetchAndStoreData = async () => {
 
     parser.on('end', async () => {
       // call multiple bulk inserts with promise all
-      progressBar.stop();
+      // progressBar.stop();
       endTime = performance.now();
       console.log(chalk.green(`parsed ${urlCounter} URLs, took ${(endTime - startTime) / 1000} seconds`));
       const promiseArray = [];
@@ -275,7 +275,7 @@ export const fetchAndStoreData = async () => {
       }
 
       startTime = performance.now();
-      const responses = await Promise.all(promiseArray);
+      await Promise.all(promiseArray);
       endTime = performance.now();
       console.log(chalk.green(`resolved ${insertBuffers.length} bulk insert requests, took ${(endTime - startTime) / 1000} seconds`));
       console.log(chalk.magentaBright(`server ready!`));

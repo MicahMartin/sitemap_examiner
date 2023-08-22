@@ -14,15 +14,15 @@ import cors from 'cors';
  * Server configuration and route definitions
  */
 console.log(chalk.yellow("Server Starting!"));
-const server = express();
-server.use(cors());
 
 /**
  * Fetch and store data before starting the server
  */
 await initDb();
-fetchAndStoreData();
+await fetchAndStoreData();
 
+export const server = express();
+server.use(cors());
 /**
  * Route for handling product requests by SKU
  * @name server/product
