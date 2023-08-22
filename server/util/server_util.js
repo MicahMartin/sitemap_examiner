@@ -1,6 +1,7 @@
 import { searchBySku, getCache, setCache, searchByKeywords } from './db_util.js';
 import { load } from 'cheerio';
 import axios from 'axios';
+import chalk from 'chalk';
 
 /** Utility functions for server
  * @module server_util
@@ -55,7 +56,7 @@ export const getBySku = async (sku) => {
     const { data } = await axios.get(product._source.url);
 
     let endTime = performance.now();
-    console.log(`took ${(endTime - startTime)/1000} seconds to pull html`);
+    console.log(chalk.green(`took ${(endTime - startTime)/1000} seconds to pull html`));
 
     startTime = performance.now();
 
@@ -63,7 +64,7 @@ export const getBySku = async (sku) => {
 
     endTime = performance.now();
 
-    console.log(`took ${(endTime - startTime)/1000} seconds to process html`);
+    console.log(chalk.green(`took ${(endTime - startTime)/1000} seconds to process html`));
     setCache(sku, JSON.stringify(result), { EX: oneDay });
     return result;
   }

@@ -53,8 +53,8 @@ export const initDb = async () => {
     },
     settings: {
       index: {
-        number_of_shards: 8,
-        number_of_replicas: 4,
+        number_of_shards: 4,
+        number_of_replicas: 2,
       },
     },
   };
@@ -200,13 +200,6 @@ const extractKeywordsFromUrl = (url) => {
   return keywords;
 }
 
-// progress bar for the console
-const progressBar = new cliProgress.SingleBar({
-  format: `${chalk.yellow("Parsing and Loading")} ${chalk.magenta('[{bar}]')} ${chalk.yellow('{percentage}%')} | ETA: {eta}s | {value}/{total} URLs`,
-  barCompleteChar: '\u2588',
-  barIncompleteChar: '\u2591',
-});;
-
 /**
  * Utility function to fetch and store data from sitemap to OpenSearch index
  * We spend some extra time setting this up when server starts,
@@ -221,31 +214,42 @@ export const fetchAndStoreData = async () => {
   // Avoid loading the entire XML file into memory at once!
   console.log(chalk.yellow("importing xml to open search"));
   try {
-    const startTime = performance.now();
+    let startTime = performance.now();
+    let endTime = performance.now();
     // Check if sitemap4.xml exists on disk, if not, download and save it
     const SITEMAP_URL = process.env.SITEMAP_URL || "https://www.christianbook.com/sitemap4.xml";
     const SITEMAP_PATH = process.env.SITEMAP_PATH || "./data/sitemap4.xml";
     const parser = sax.createStream(false, { lowercase: true });
 
     if (!fs.existsSync(SITEMAP_PATH)) {
-      const startTime = performance.now();
       console.log(chalk.green("Downloading sitemap!"));
 
       const { data } = await axios.get(SITEMAP_URL, { responseType: "arraybuffer" });
       fs.writeFileSync(SITEMAP_PATH, data);
 
-      const endTime = performance.now();
+      endTime = performance.now();
       console.log(chalk.green(`Finished downloading sitemap, took ${(endTime - startTime) / 1000} seconds`));
     }
 
+    // progress bar for the console
+    const progressBar = new cliProgress.SingleBar({
+      format: `${chalk.yellow("Parsing Sitemap Xml...")} ${chalk.magenta('[{bar}]')} ${chalk.yellow('{percentage}%')} | ETA: {eta}s | {value}/{total} URLs`,
+      barCompleteChar: '\u2588',
+      barIncompleteChar: '\u2591',
+    });
+
+    startTime = performance.now();
     progressBar.start(fs.statSync(SITEMAP_PATH).size, 0);
 
     let bytesProcessed = 0;
     const siteMap = fs.createReadStream(SITEMAP_PATH);
     siteMap.on('data', chunk => progressBar.update(bytesProcessed += chunk.length));
     let urlCounter = 0;
+    let insertCounter = 0;
     let currentUrl = null;
-    let insertBuffer = [];
+    const bufferMax = 12500;
+    let insertBuffers = [[]];
+    let currentBuffer = 0;
 
     parser.on('opentag', node => {
       if (node.name === 'loc') currentUrl = '';
@@ -256,13 +260,25 @@ export const fetchAndStoreData = async () => {
     });
 
     parser.on('end', async () => {
-      await openSearchClient.bulk({
-        index: indexName,
-        body: insertBuffer, 
-      });
-      const endTime = performance.now();
+      // call multiple bulk inserts with promise all
       progressBar.stop();
-      console.log(chalk.green(`imported ${urlCounter} URLs successfully, took ${(endTime - startTime) / 1000} seconds`));
+      endTime = performance.now();
+      console.log(chalk.green(`parsed ${urlCounter} URLs, took ${(endTime - startTime) / 1000} seconds`));
+      const promiseArray = [];
+      console.log(chalk.yellow(`creating ${insertBuffers.length} bulk insert requests`));
+
+      for (let i = 0; i < insertBuffers.length; i++) {
+        promiseArray.push(openSearchClient.bulk({
+          index: indexName,
+          body: insertBuffers[i], 
+        }));
+      }
+
+      startTime = performance.now();
+      const responses = await Promise.all(promiseArray);
+      endTime = performance.now();
+      console.log(chalk.green(`resolved ${insertBuffers.length} bulk insert requests, took ${(endTime - startTime) / 1000} seconds`));
+      console.log(chalk.magentaBright(`server ready!`));
     });
 
     parser.on('closetag', tagName => {
@@ -272,12 +288,18 @@ export const fetchAndStoreData = async () => {
         if (match && match[1]) {
           const sku = match[1];
           urlCounter++;
-          insertBuffer.push({ index: { _index: indexName } });
-          insertBuffer.push({ 
+          // split the data into multiple buffers so we can do multiple inserts async
+          insertBuffers[currentBuffer].push({ index: { _index: indexName } });
+          insertBuffers[currentBuffer].push({ 
             sku, 
             url: currentUrl, 
             keywords: extractKeywordsFromUrl(currentUrl),
           });
+          if(insertCounter++ === bufferMax){
+            insertBuffers.push([]);
+            insertCounter = 0;
+            currentBuffer++;
+          }
         }
         currentUrl = null;
       }
