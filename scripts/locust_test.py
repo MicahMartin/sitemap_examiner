@@ -1,4 +1,4 @@
-from locust import HttpUser, task, constant
+from locust import HttpUser, task, between 
 import requests
 import random
 
@@ -11,7 +11,7 @@ response = requests.get(word_site)
 WORDS = response.content.splitlines()
 
 class MyUser(HttpUser):
-    wait_time = constant(.5)
+    wait_time = between(1, 5)
 
     # @task
     # def get_status(self):
@@ -21,9 +21,9 @@ class MyUser(HttpUser):
     # def get_product(self):
     #     self.client.get("/product/404")
 
-    # @task
-    # def search_products(self):
-    #     random_word_count = random.randint(1, 3)
-    #     random_words = random.sample(WORDS, random_word_count)
-    #     query_param = " ".join(word.decode("utf-8") for word in random_words)
-    #     self.client.get(f"/search?keywords={query_param}")
+    @task
+    def search_products(self):
+        #random_word_count = random.randint(1, 3)
+        random_words = random.sample(WORDS, 1)
+        query_param = " ".join(word.decode("utf-8") for word in random_words)
+        self.client.get(f"/search?keywords={query_param}")

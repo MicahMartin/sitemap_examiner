@@ -79,7 +79,6 @@ export const getCache = async (key) => cache.get(key);
 
 /**
  * Utility function to set a value in the cache with an optional expiration time
- * @async
  * @name db_util/setCache
  * @method
  * @memberof module:db_util
@@ -89,11 +88,10 @@ export const getCache = async (key) => cache.get(key);
  * @param {number|null} expiration - Optional expiration time in seconds
  * @returns {Promise<string>} A promise indicating success
  */
-export const setCache = async (key, value, expiration) => cache.set(key, value, expiration);
+export const setCache = (key, value, expiration) => cache.set(key, value, expiration);
 
 /**
  * Utility function to flush the entire cache or a specific cache item
- * @async
  * @name db_util/flushCache
  * @method
  * @memberof module:db_util
@@ -101,13 +99,13 @@ export const setCache = async (key, value, expiration) => cache.set(key, value, 
  * @param {string} [cacheKey=''] - The key of the cache item to flush (optional)
  * @returns {Promise<void>} A promise containing result
  */
-export const flushCache = async (cacheKey = '') => {
+export const flushCache = (cacheKey = '') => {
   try {
     if(cacheKey === '') {
-      await cache.flushAll();
+      cache.flushAll();
       console.log(chalk.green('Redis cache flushed successfully.'));
     }else {
-      await cache.del(cacheKey);
+      cache.del(cacheKey);
       console.log(chalk.green(`Redis cache item with key "${cacheKey}" flushed successfully.`));
     }
 
